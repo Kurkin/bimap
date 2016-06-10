@@ -1,13 +1,24 @@
 #include "gtest/gtest.h"
 #include "bimap.hpp"
 
-TEST(correctness, empty_map) {
+class correctness : public testing::Test {
+protected:
+    bimap<int, std::string> map;
+    
+    virtual void SetUp() {
+        EXPECT_TRUE(map.insert(1, "aba"));
+        EXPECT_TRUE(map.insert(2, "caba"));
+        EXPECT_TRUE(map.insert(3, "abacaba")); 
+    }
+};
+
+TEST_F(correctness, empty_map) {
     bimap<int, std::string> map;
     EXPECT_EQ(0, map.size());
     EXPECT_TRUE(map.empty());
 }
 
-TEST(correctness, one_element) {
+TEST_F(correctness, one_element) {
     bimap<int, int> map;
     map.insert(1, 2);
     EXPECT_EQ(2, map.get_value_by_key(1));
@@ -15,12 +26,7 @@ TEST(correctness, one_element) {
     EXPECT_EQ(1, map.size());
 }
 
-TEST(correctness, multi_items) {
-    bimap<int, std::string> map;
-    EXPECT_TRUE(map.insert(1, "aba"));
-    EXPECT_TRUE(map.insert(2, "caba"));
-    EXPECT_TRUE(map.insert(3, "abacaba"));
-
+TEST_F(correctness, multi_items) {
     EXPECT_EQ(1, map.get_key_by_value("aba"));
     EXPECT_EQ(2, map.get_key_by_value("caba"));
     EXPECT_EQ(3, map.get_key_by_value("abacaba"));
@@ -32,12 +38,7 @@ TEST(correctness, multi_items) {
     EXPECT_EQ(3, map.size());
 }
 
-TEST(correctness, insert_element_with_existing_value_or_key) {
-    bimap<int, std::string> map;
-    EXPECT_TRUE(map.insert(1, "aba"));
-    EXPECT_TRUE(map.insert(2, "caba"));
-    EXPECT_TRUE(map.insert(3, "abacaba"));
-    
+TEST_F(correctness, insert_element_with_existing_value_or_key) {
     EXPECT_FALSE(map.insert(4, "aba"));
     EXPECT_FALSE(map.insert(3, "QWE"));
     EXPECT_FALSE(map.insert(2, "caba"));
@@ -52,24 +53,18 @@ TEST(correctness, insert_element_with_existing_value_or_key) {
     EXPECT_EQ(3, map.size());
 }
 
-TEST(correctness, geting_absent_value) {
+TEST_F(correctness, geting_absent_value) {
     bimap<int, std::string> map;
     EXPECT_ANY_THROW(map.get_value_by_key(1));
     EXPECT_ANY_THROW(map.get_key_by_value("asdasd"));
 }
 
-TEST(correctness, delete_existing_element) {
-    bimap<int, std::string> map;
-    
-    EXPECT_TRUE(map.insert(1, "aba"));
-    EXPECT_TRUE(map.insert(2, "caba"));
-    EXPECT_TRUE(map.insert(3, "abacaba"));
-    
-    EXPECT_EQ(1, map.erase_by_key(2));
+TEST_F(correctness, delete_existing_element) {
+    EXPECT_TRUE(map.erase_by_key(2));
     EXPECT_ANY_THROW(map.get_value_by_key(2));
     EXPECT_ANY_THROW(map.get_key_by_value("caba"));
     
-    EXPECT_EQ(1, map.erase_by_value("aba"));
+    EXPECT_TRUE(map.erase_by_value("aba"));
     EXPECT_ANY_THROW(map.get_value_by_key(1));
     EXPECT_ANY_THROW(map.get_key_by_value("aba"));
     
@@ -78,19 +73,19 @@ TEST(correctness, delete_existing_element) {
     EXPECT_FALSE(map.empty());
 }
 
-TEST(correctness, delete_absent_element) {
+TEST_F(correctness, delete_absent_element) {
     bimap<int, std::string> map;
     map.insert(1, "aba");
-    EXPECT_EQ(0, map.erase_by_key(213123));
-    EXPECT_EQ(0, map.erase_by_key(131451));
-    EXPECT_EQ(0, map.erase_by_value("asdq"));
-    EXPECT_EQ(0, map.erase_by_value("asdh"));
+    EXPECT_FALSE(map.erase_by_key(213123));
+    EXPECT_FALSE(map.erase_by_key(131451));
+    EXPECT_FALSE(map.erase_by_value("asdq"));
+    EXPECT_FALSE(map.erase_by_value("asdh"));
     
     EXPECT_EQ(1, map.size());
     EXPECT_FALSE(map.empty());
 }
 
-TEST(correctness, random_insert_erase) {
+TEST_F(correctness, random_insert_erase) {
     bimap<int, int> map;
     std::set<int> keys_set;
     std::set<int> values_set;
@@ -121,11 +116,11 @@ TEST(copy, bimap_assiginment_copys_independence) {
     EXPECT_TRUE(a.insert(3, "abac")); 
     bimap<int, std::string> b = a;
 
-    EXPECT_EQ(1, a.erase_by_value("abacaba"));
-    EXPECT_EQ(1, a.erase_by_key(3));
+    EXPECT_TRUE(a.erase_by_value("abacaba"));
+    EXPECT_TRUE(a.erase_by_key(3));
 
-    EXPECT_EQ(1, b.erase_by_key(1));
-    EXPECT_EQ(1, b.erase_by_value("abaa"));
+    EXPECT_TRUE(b.erase_by_key(1));
+    EXPECT_TRUE(b.erase_by_value("abaa"));
 
     EXPECT_ANY_THROW(b.get_value_by_key(1));
     EXPECT_ANY_THROW(b.get_value_by_key(2)); 
@@ -147,11 +142,11 @@ TEST(copy, bimap_copys_independence) {
     EXPECT_TRUE(a.insert(3, "abac")); 
     bimap<int, std::string> b = a;
 
-    EXPECT_EQ(1, a.erase_by_value("abacaba"));
-    EXPECT_EQ(1, a.erase_by_key(3));
+    EXPECT_TRUE(a.erase_by_value("abacaba"));
+    EXPECT_TRUE(a.erase_by_key(3));
 
-    EXPECT_EQ(1, b.erase_by_key(1));
-    EXPECT_EQ(1, b.erase_by_value("abaa"));
+    EXPECT_TRUE(b.erase_by_key(1));
+    EXPECT_TRUE(b.erase_by_value("abaa"));
 
     EXPECT_ANY_THROW(b.get_value_by_key(1));
     EXPECT_ANY_THROW(b.get_value_by_key(2)); 
